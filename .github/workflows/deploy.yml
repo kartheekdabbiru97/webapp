@@ -1,0 +1,33 @@
+# inside .github/workflows/your-action.yml
+name: Adding Artifacts to Bucket
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: debug dir
+      run: |
+        echo $(ls)
+    - name: Release to S3
+      run: bash scripts/deploy_scripts/release.sh ${{ secrets.AWS_Bucket_Name }} "webapp.zip" ${{ secrets.AWS_Access_Key }} ${{ secrets.AWS_Access_Secret }} "webapp.zip"
+    
+    - uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_Access_Key }}
+        aws-secret-access-key: ${{ secrets.AWS_Access_Secret }}
+        aws-region: us-east-1
+
+    - name: Create CodeDeploy Deployment
+      id: deploy
+      run: |
+        echo $(ls)
+        aws deploy create-deployment --application-name csye6225-webapp --deployment-config-name CodeDeployDefault.OneAtATime --deployment-group-name csye6225-webapp-deployment --s3-location bucket=${{ secrets.AWS_Bucket_Name }},key=webapp.zip,bundleType=zip
