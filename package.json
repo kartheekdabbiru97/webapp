@@ -19,7 +19,7 @@
     "express-basic-auth": "^1.2.0",
     "fs": "0.0.1-security",
     "jsonwebtoken": "^8.5.1",
-    "nodemon": "^2.0.14",
+    "nodemon": "^2.0.15",
     "pg": "^8.7.1",
     "pg-hstore": "^2.3.4",
     "sequelize": "^6.6.5",

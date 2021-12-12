@@ -1,3 +1,4 @@
+require('dotenv').config()
 const express = require("express");
 const bodyParser = require("body-parser");
 
@@ -8,7 +9,7 @@ const app = express();
 global.__basedir = __dirname;
 
 var corsOptions = {
-    origin : "http://localhost:3000"
+    origin : "http://localhost:8000"
 };
 
 app.use(cors(corsOptions));
@@ -33,7 +34,7 @@ app.get("/v1", (req, res) => {
 require("./app/routes/user.routes")(app);
 //port
 
-const PORT = process.env.PORT || 8081;
+const PORT = process.env.PORT || 8000;
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
