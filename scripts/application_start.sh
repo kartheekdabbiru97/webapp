@@ -4,7 +4,7 @@
 sudo chmod -R 777 /home/ubuntu/webApp
 
 #copying .env to webapp
-cp .env webapp
+cp /home/ubuntu/.env /home/ubuntu/webApp
 
 #navigate into our working directory where we have all our github files
 cd /home/ubuntu/webApp
