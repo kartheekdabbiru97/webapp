@@ -337,11 +337,11 @@ exports.fetchImageByUsername=async(req, res)=>{
   })
   .then(data => {
     const imageData = {
-      file_name: result1.file_name,
-      id: result1.id,
-      url: result1.url,
-      upload_date: result1.upload_date,
-      user_id: result1.user_id
+      file_name: data.file_name,
+      id: data.id,
+      url: data.url,
+      upload_date: data.upload_date,
+      user_id: data.user_id
     }
     res.status(200).send(imageData)
   }).catch(err => {
