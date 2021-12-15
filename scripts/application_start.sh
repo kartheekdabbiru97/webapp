@@ -27,5 +27,5 @@ npm start > app.out.log 2> app.err.log < /dev/null &
 sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl \
 -a fetch-config \
 -m ec2 \
--c file://home/ubuntu/webapp/aws-cw-log.json\
+-c file://home/ubuntu/webapp/aws-cw-log.json \
 -s
