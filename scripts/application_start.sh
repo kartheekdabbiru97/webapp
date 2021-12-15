@@ -22,6 +22,3 @@ npm install
 
 #start our node app in the background
 npm start > app.out.log 2> app.err.log < /dev/null & 
-
-#Install cloudwatch agent and fetch cloudwatch metrics from json file
-sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file://home/ubuntu/webApp/aws-cw-log.json -s
