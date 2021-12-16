@@ -14,9 +14,14 @@ const util = require('util');
 const baseUrl = "http://localhost:8000/v1/self/pic";
 const jwt = require('jsonwebtoken');
 const bodyParser = require('body-parser')
+const StatsdClient = require("statsd-client");
+const statsdClient = new StatsdClient({host: 'localhost', port: 8000});
 
 // Create and Save a new User
 exports.create = (req, res) => {
+    statsdClient.increment("User - Create");
+    let startTime = new Date();
+
     // Validate request
     if (!req.body.first_name) {
       res.status(400).send();
@@ -62,7 +67,13 @@ exports.create = (req, res) => {
                   username : req.body.username,
                   account_created: data.account_created,
                   account_updated: data.account_updated
-                }                
+                } 
+
+                let endTime = new Date();
+                statsdClient.timing(
+                  "User creation time",
+                  endTime - startTime
+                  );               
                 res.status(201).send({dataNew});
             })
             .catch(err => {
@@ -76,9 +87,18 @@ exports.create = (req, res) => {
 
 // Find a User with an id
 exports.findOne = (req, res) => {
+  statsdClient.increment("User - Find");
+  let startTime = new Date();
+
   console.log('Finding one', res.locals);
   User.findByPk(req.params.id)
     .then(data => {
+      let endTime = new Date();
+      statsdClient.timing(
+        "User finding time",
+        endTime - startTime
+      );       
+
       res.status(200).send({
         id: data.id,
         first_name : data.first_name,
@@ -95,10 +115,10 @@ exports.findOne = (req, res) => {
 };
 
 // Update a User by the id in the request
-
-
 exports.update = (req, res) => {
 
+  statsdClient.increment("User - Update");
+  let startTime = new Date();
   
   bcrypt.hash(req.body.password, 10, (err, hash) => {
     if(err){
@@ -144,6 +164,11 @@ exports.update = (req, res) => {
        })
       .then(num => {
         if (num == 1) {
+          let endTime = new Date();
+          statsdClient.timing(
+            "User update time",
+            endTime - startTime
+          );
           res.status(200).send({
             message: "User was updated successfully."
          });
@@ -167,10 +192,13 @@ exports.update = (req, res) => {
 
 
 //Creating Image DB
-
 exports.createImage = async (req, res, location) => {
   // await User.upload(req.body);
   // console.log(req.body)
+
+  statsdClient.increment("User - Create Image");
+  let startTime = new Date();
+
   const user = await this.findUser(global.username)
   const imageData = ( {
     
@@ -197,8 +225,10 @@ exports.createImage = async (req, res, location) => {
 
 
 // Uploading Image
-
 exports.upload = async (req, res) => {
+  statsdClient.increment("User - Upload Image");
+  let startTime = new Date();
+
   bodyParser.raw({
         limit: "3mb",
         type: ["image/*"],
@@ -221,6 +251,12 @@ exports.upload = async (req, res) => {
     const location = result.Location
     const imageInfo = await this.createImage(req, res, location)
 
+    let endTime = new Date();
+      statsdClient.timing(
+        "Image uploading time",
+        endTime - startTime
+      );
+
     res.status(201).send({
       message: "Profile pic added",
       imageInfo
@@ -241,6 +277,9 @@ exports.upload = async (req, res) => {
 };
 
 exports.getListFiles = (req, res) => {
+  statsdClient.increment("Scan s3 artifacts");
+  let startTime = new Date();
+
   const directoryPath = __basedir + "/resources/static/assets/uploads/";
 
   fs.readdir(directoryPath, function (err, files) {
@@ -259,15 +298,21 @@ exports.getListFiles = (req, res) => {
       });
     });
 
+    let endTime = new Date();
+    statsdClient.timing(
+      "User creation time",
+      endTime - startTime
+    );
+
     res.status(200).send(fileInfos);
   });
 };
 
 //find user by username
-
-
-
 exports.findUser=async(username)=>{
+  statsdClient.increment("User - Find user by username");
+  let startTime = new Date();
+
   let result = await User.findOne({
     where: {
         username: username
@@ -276,11 +321,11 @@ exports.findUser=async(username)=>{
 return result;
 }
 
-// end find user by email id
-
 //find image by userId
-
 exports.findImageByUserID=async(userId)=>{
+  statsdClient.increment("User - Find Image");
+  let startTime = new Date();
+
   let result = await Image.findOne({
     where: {
         user_id: userId
@@ -291,11 +336,21 @@ return result;
 
 //fetch user data
 exports.fetchUserData=async(req, res)=>{
+  statsdClient.increment("User - Fetch details");
+  let startTime = new Date();
+
   let result = await User.findOne({
     where: {
       username:global.username
     }
   });
+
+  let endTime = new Date();
+    statsdClient.timing(
+      "User date fetch time",
+      endTime - startTime
+    );
+
   res.status(200).send({id:result.id,
     first_name :result.first_name,
     last_name:result.last_name,
@@ -306,8 +361,10 @@ exports.fetchUserData=async(req, res)=>{
 }
 
 //fetch image data by username
-
 exports.fetchImageByUsername=async(req, res)=>{
+  statsdClient.increment("Image - Find by username");
+  let startTime = new Date();
+
   let result = await User.findOne({
     where: {
       username:global.username
@@ -326,6 +383,13 @@ exports.fetchImageByUsername=async(req, res)=>{
       upload_date: data.upload_date,
       user_id: data.user_id
     }
+
+    let endTime = new Date();
+      statsdClient.timing(
+        "Fetch user image by username time",
+        endTime - startTime
+      );
+
     res.status(200).send(imageData)
   }).catch(err => {
     res.status(404).send()
@@ -336,6 +400,8 @@ exports.fetchImageByUsername=async(req, res)=>{
 //delete image data by userId
 
 exports.deleteImageByUserId=async(req, res)=>{
+  statsdClient.increment("Image - Delete Image by user ID");
+  let startTime = new Date();
 
   let result = await User.findOne({
     where: {
@@ -348,6 +414,13 @@ exports.deleteImageByUserId=async(req, res)=>{
     }
   });
   await deleteFileFromS3(req,res,result);
+
+  let endTime = new Date();
+    statsdClient.timing(
+      "Delete image by user ID time",
+      endTime - startTime
+    );
+
   res.status(200).send("Record Deleted Successfully!!!")
 }
 
@@ -357,6 +430,9 @@ exports.deleteImageByUserId=async(req, res)=>{
 
 // Delete a Users with the specified id in the request
 exports.delete = (req, res) => {
+  statsdClient.increment("User - Delete");
+  let startTime = new Date();
+
   const id = req.params.id;
 
   User.destroy({
@@ -364,6 +440,12 @@ exports.delete = (req, res) => {
   })
     .then(num => {
       if (num == 1) {
+        let endTime = new Date();
+          statsdClient.timing(
+            "Delete user data by ID time",
+            endTime - startTime
+          );
+
         res.status(200).send({
           message: "User was deleted successfully!"
         });
@@ -382,11 +464,19 @@ exports.delete = (req, res) => {
 
 // Delete all Users from the database.
 exports.deleteAll = (req, res) => {
+  statsdClient.increment("Delete all users");
+  let startTime = new Date();
+
   User.destroy({
     where: {},
     truncate: false
   })
     .then(nums => {
+      let endTime = new Date();
+      statsdClient.timing(
+        "Delete user DB time",
+        endTime - startTime
+      );
       res.status(200).send({ message: `${nums} Users were deleted successfully!` });
     })
     .catch(err => {
