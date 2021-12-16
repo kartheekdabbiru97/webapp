@@ -11,7 +11,7 @@ const {uploadFileToS3} = require("../../s3");
 const {deleteFileFromS3} = require("../../s3");
 const fs = require("fs");
 const util = require('util');
-const baseUrl = "http://localhost:8080/v1/self/pic";
+const baseUrl = "http://localhost:8000/v1/self/pic";
 const jwt = require('jsonwebtoken');
 const bodyParser = require('body-parser')
 const StatsdClient = require("statsd-client");
@@ -84,23 +84,6 @@ exports.create = (req, res) => {
     } )
 
   };
-
-// // Retrieve all Users from the database.
-// exports.findAll = (req, res) => {
-//   const id = req.query.id;
-//   var condition = id ? { id: { [Op.iLike]: `%${id}%` } } : null;
-
-//   User.findAll({ where: condition })
-//     .then(data => {
-//       res.status(200).send(data);
-//     })
-//     .catch(err => {
-//       res.status(500).send({
-//         message:
-//           err.message || "Some error occurred while retrieving Users."
-//       });
-//     });
-// };
 
 // Find a User with an id
 exports.findOne = (req, res) => {
